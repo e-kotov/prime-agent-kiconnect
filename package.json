@@ -1,0 +1,13 @@
+{
+  "name": "prime-agent-kiconnect",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prime Agent display extension for verified KI:connect response models and gateway quota metadata",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/**/*.test.mjs"
+  },
+  "pi": {
+    "extensions": ["./src/index.ts"]
+  }
+}
