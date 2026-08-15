@@ -72,8 +72,13 @@ client-visible SSE event (only event metadata was retained):
 ```
 
 So LiteLLM is already passing a provider-returned model through the Responses
-SSE body in this route. It cannot make that later field available as an HTTP
-header without delaying the response start and buffering SSE frames. The installed Pi AI dependency parser **and Prime's bundled runtime copy** were
+SSE body in this route. A separate direct, streaming request with requested
+`model: "GPT5-Mitarbeitende"` returned `response.model:
+"gpt-5.6-terra-mitarbeitende"` at `response.created`,
+`response.in_progress`, and `response.completed`. This confirms that full KI
+route's actual metadata too; the configured display label is not the returned
+identifier. LiteLLM cannot make a later field available as an HTTP header
+without delaying the response start and buffering SSE frames. The installed Pi AI dependency parser **and Prime's bundled runtime copy** were
 locally patched with the change above and verified with both a synthetic stream
 and a real Prime request. The real session persisted
 `responseModel: "gpt-5-mini-Mitarbeitende"` separately from configured
