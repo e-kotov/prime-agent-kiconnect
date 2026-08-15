@@ -61,3 +61,21 @@ continuation falsely treat the prior assistant message as a different model.
 
 The extension never substitutes a requested alias (`gpt-5-mini`) or gateway
 route for a missing actual model, so it cannot falsely claim a deployment name.
+
+## Local verification on 2026-08-15
+
+A live low-output request through the local IONOS LiteLLM tunnel returned this
+client-visible SSE event (only event metadata was retained):
+
+```json
+{"event":"response.created","model":"gpt-5-mini-Mitarbeitende","id_present":true}
+```
+
+So LiteLLM is already passing a provider-returned model through the Responses
+SSE body in this route. It cannot make that later field available as an HTTP
+header without delaying the response start and buffering SSE frames. The
+installed Pi AI compiled parser was locally patched with the change above and
+verified with a synthetic `response.created`/`response.completed` stream; it
+produced `responseModel: "gpt-5-mini-Mitarbeitende"`. This local package edit
+will be overwritten by a Prime/Pi AI update; keep the patch file in
+`patches/pi-ai-openai-responses-response-model.patch` until upstreamed.

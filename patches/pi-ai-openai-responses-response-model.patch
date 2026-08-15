@@ -1,0 +1,18 @@
+--- a/packages/pi-ai/src/providers/openai-responses-shared.ts
++++ b/packages/pi-ai/src/providers/openai-responses-shared.ts
+@@ -220,6 +220,9 @@ export async function processResponsesStream(...) {
+   for await (const event of openaiStream) {
+     if (event.type === "response.created") {
+       output.responseId = event.response.id;
++      if (typeof event.response.model === "string" && event.response.model) {
++        output.responseModel ||= event.response.model;
++      }
+     }
+@@ -427,6 +430,9 @@ export async function processResponsesStream(...) {
+       if (response?.id) {
+         output.responseId = response.id;
+       }
++      if (typeof response?.model === "string" && response.model) {
++        output.responseModel ||= response.model;
++      }
+       if (response?.usage) {

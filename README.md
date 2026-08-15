@@ -47,6 +47,16 @@ header for a stream if LiteLLM only learns it from the later body.
 This distinction matters: showing the configured alias when metadata is absent
 would make the UI look complete while defeating the purpose of the extension.
 
+### Current local runtime
+
+On 2026-08-15 the installed Pi AI Responses parser on this Mac was patched with
+the additive `responseModel` propagation and verified against a live LiteLLM
+SSE `response.created` model. The extension is installed as
+`~/.prime/agent/extensions/kiconnect.ts`; run `/reload` in Prime to load it.
+The parser edit lives under Prime's installed dependencies and can be lost on
+an upgrade; reapply or upstream
+[`patches/pi-ai-openai-responses-response-model.patch`](patches/pi-ai-openai-responses-response-model.patch).
+
 ## Development
 
 ```bash
