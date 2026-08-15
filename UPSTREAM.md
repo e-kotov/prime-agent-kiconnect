@@ -73,9 +73,10 @@ client-visible SSE event (only event metadata was retained):
 
 So LiteLLM is already passing a provider-returned model through the Responses
 SSE body in this route. It cannot make that later field available as an HTTP
-header without delaying the response start and buffering SSE frames. The
-installed Pi AI compiled parser was locally patched with the change above and
-verified with a synthetic `response.created`/`response.completed` stream; it
-produced `responseModel: "gpt-5-mini-Mitarbeitende"`. This local package edit
-will be overwritten by a Prime/Pi AI update; keep the patch file in
+header without delaying the response start and buffering SSE frames. The installed Pi AI dependency parser **and Prime's bundled runtime copy** were
+locally patched with the change above and verified with both a synthetic stream
+and a real Prime request. The real session persisted
+`responseModel: "gpt-5-mini-Mitarbeitende"` separately from configured
+`model: "gpt-5-mini"`. These local package edits will be overwritten by a
+Prime/Pi AI update; keep the patch file in
 `patches/pi-ai-openai-responses-response-model.patch` until upstreamed.
