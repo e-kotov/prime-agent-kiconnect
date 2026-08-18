@@ -19,17 +19,10 @@ Run `/kiconnect-status` for provenance, reset time, and observation timestamp.
 ## Install
 
 ```bash
-cd /Users/ek/tmp/prime-agent-kiconnect
-npm test
-bash install.sh
+git clone https://github.com/e-kotov/prime-agent-kiconnect.git && cd prime-agent-kiconnect && bash install.sh
 ```
 
-Then restart Prime Agent or run `/reload`.
-
-The extension has no credentials, model catalogue, HTTP client, or quota gate.
-Those remain in the generated Prime model catalogue and the central LiteLLM
-service. It persists only sanitized actual-model/quota fields in the session's
-extension-only custom entries.
+Restart Prime Agent or run `/reload`.
 
 ## Honest coverage boundaries
 
