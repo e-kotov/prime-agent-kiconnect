@@ -1,8 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  CUSTOM_TYPE, renderStatus, restoreStatus, statusFromHeaders, statusFromResponseModel,
+  CUSTOM_TYPE, mergeStatus, renderStatus, restoreStatus, statusFromHeaders, statusFromResponseModel,
 } from "../src/logic.mjs";
+
+test("unlimited gateway state clears a cached hourly quota and survives restore", () => {
+  const patch = statusFromHeaders({"x-gateway-ratelimit-source": "local-shared", "x-gateway-ratelimit-mode": "unlimited"});
+  const next = mergeStatus({actualModel: "gpt-6-luna", limit: 100, remaining: 0, resetSeconds: 900}, patch);
+  assert.equal(next.limit, undefined);
+  assert.equal(next.remaining, undefined);
+  assert.equal(next.resetSeconds, undefined);
+  assert.match(renderStatus(next)[0], /unlimited/);
+  const saved = restoreStatus([{type: "custom", customType: CUSTOM_TYPE, data: next}]);
+  assert.equal(saved.quotaMode, "unlimited");
+  const capped = mergeStatus(saved, statusFromHeaders({"x-gateway-ratelimit-source": "local-shared", "x-ratelimit-limit-hour": "1000"}));
+  assert.equal(capped.quotaMode, undefined);
+  assert.equal(capped.limit, 1000);
+  assert.equal(statusFromHeaders({"x-gateway-ratelimit-mode": "unlimited"}).quotaMode, undefined);
+});
 
 test("accepts only gateway-labelled quota and a provenance-labelled actual model", () => {
   const status = statusFromHeaders({

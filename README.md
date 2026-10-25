@@ -16,6 +16,8 @@ KI: gpt-5-mini · 998/1000/h · 72 T/s
 
 Run `/kiconnect-status` for provenance, reset time, and observation timestamp.
 
+See [CHANGELOG.md](CHANGELOG.md) for recent changes.
+
 ## Install
 
 ```bash
@@ -62,3 +64,12 @@ The tests cover header provenance, RFC quota fallback, missing streaming model
 metadata, response-body metadata, rendering, and session restoration. A live
 smoke should be a single short KI request through the tunnel, followed by one
 direct-route test only after the upstream parser patch is available.
+
+### Unlimited interactions
+
+The gateway labels an unlimited interaction policy with both
+`X-Gateway-RateLimit-Source: local-shared` and
+`X-Gateway-RateLimit-Mode: unlimited`. The widget then clears cached hourly
+limit/remaining/reset values and displays `unlimited`. This does not remove
+shared concurrency or transport pacing. Switching to a capped model restores
+its numerical quota display.

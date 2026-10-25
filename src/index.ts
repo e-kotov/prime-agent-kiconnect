@@ -19,6 +19,7 @@ type StoredStatus = {
   remaining?: number;
   resetSeconds?: number;
   quotaSource?: "local-shared";
+  quotaMode?: "unlimited";
   observedAt?: number;
 };
 

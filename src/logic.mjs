@@ -36,7 +36,10 @@ export function statusFromHeaders(headers, observedAt = Date.now()) {
 
   // Quota values are accepted only when the gateway explicitly labels them as
   // its shared SQLite state. Direct KI:connect has no equivalent truthful data.
-  if (localGateway) {
+  if (localGateway && h["x-gateway-ratelimit-mode"] === "unlimited") {
+    status.quotaSource = "local-shared";
+    status.quotaMode = "unlimited";
+  } else if (localGateway) {
     status.limit = integer(h["x-ratelimit-limit-hour"]) ?? standardLimit(h["ratelimit-limit"]);
     status.remaining = integer(h["x-ratelimit-remaining-hour"]) ?? integer(h["ratelimit-remaining"]);
     status.resetSeconds = integer(h["x-ratelimit-reset-hour"]) ?? integer(h["ratelimit-reset"]);
@@ -63,11 +66,18 @@ export function mergeStatus(previous, patch) {
   for (const [key, value] of Object.entries(patch || {})) {
     if (value !== undefined) next[key] = value;
   }
+  if (patch?.quotaMode === "unlimited") {
+    delete next.limit;
+    delete next.remaining;
+    delete next.resetSeconds;
+  } else if (patch?.quotaSource === "local-shared" && patch.limit !== undefined) {
+    delete next.quotaMode;
+  }
   return next;
 }
 
 export function meaningfulStatus(status) {
-  return Boolean(status?.actualModel || status?.limit !== undefined || status?.remaining !== undefined);
+  return Boolean(status?.actualModel || status?.quotaMode === "unlimited" || status?.limit !== undefined || status?.remaining !== undefined);
 }
 
 export function statusKey(status) {
@@ -79,6 +89,7 @@ export function statusKey(status) {
     remaining: s.remaining,
     resetSeconds: s.resetSeconds,
     quotaSource: s.quotaSource,
+    quotaMode: s.quotaMode,
   });
 }
 
@@ -97,7 +108,9 @@ export function renderStatus(status, options = {}) {
   const segments = [];
   if (status.actualModel) segments.push(`KI: ${status.actualModel}`);
   else segments.push("KI:connect");
-  if (status.remaining !== undefined || status.limit !== undefined) {
+  if (status.quotaMode === "unlimited") {
+    segments.push("unlimited");
+  } else if (status.remaining !== undefined || status.limit !== undefined) {
     const remaining = status.remaining ?? "?";
     const limit = status.limit ?? "?";
     segments.push(`${remaining}/${limit}/h`);
@@ -126,9 +139,10 @@ export function restoreStatus(entries) {
       remaining: typeof data.remaining === "number" && Number.isSafeInteger(data.remaining) && data.remaining >= 0 ? data.remaining : undefined,
       resetSeconds: typeof data.resetSeconds === "number" && Number.isSafeInteger(data.resetSeconds) && data.resetSeconds >= 0 ? data.resetSeconds : undefined,
       quotaSource: data.quotaSource === "local-shared" ? data.quotaSource : undefined,
+      quotaMode: data.quotaSource === "local-shared" && data.quotaMode === "unlimited" ? "unlimited" : undefined,
       observedAt: typeof data.observedAt === "number" && Number.isFinite(data.observedAt) ? data.observedAt : undefined,
     };
-    return meaningfulStatus(restored) ? restored : undefined;
+    return meaningfulStatus(restored) ? mergeStatus({}, restored) : undefined;
   }
   return undefined;
 }
